@@ -33,7 +33,7 @@ with open(csvpath, newline='') as csvfile:
                 'measurement': cfg.influx['measurement'],
                 'time': nowtime,
                 'fields': {
-                    'hours': row[2],
+                    'hours': float(row[2]),
                     },
                 'tags': {
                     'organizationId': row[0],
