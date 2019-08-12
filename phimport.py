@@ -13,7 +13,7 @@ if len(sys.argv) != 2:
     sys.exit(1)
 
 csvpath = sys.argv[1]
-entries = []
+entries = {}
 added = 0
 ignored = 0
 
@@ -33,17 +33,19 @@ with open(csvpath, newline='') as csvfile:
             ignored+=1
         else:
             added+=1
-            entries.append({
-                'measurement': cfg.influx['measurement'],
-                'time': parsedeventdate,
-                'fields': {
-                    'hours': eventhours,
-                    },
-                'tags': {
-                    'organizationId': eventorg,
-                    },
-                })
-
-client.write_points(entries)
+            if (parsedeventdate, eventorg) in entries:
+                entries[(parsedeventdate, eventorg)]['fields']['hours'] += eventhours
+            else:
+                entries[(parsedeventdate, eventorg)] = {
+                    'measurement': cfg.influx['measurement'],
+                    'time': parsedeventdate,
+                    'fields': {
+                        'hours': eventhours,
+                        },
+                    'tags': {
+                        'organizationId': eventorg,
+                        },
+                    }
+client.write_points([e for e in entries.values()])
 print("added %d entries" % added)
 print("ignored %d entries" % ignored)
