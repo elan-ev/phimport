@@ -16,27 +16,31 @@ csvpath = sys.argv[1]
 entries = []
 added = 0
 ignored = 0
-nowtime=time.time_ns()
+
 
 with open(csvpath, newline='') as csvfile:
     csvreader = csv.reader(csvfile, delimiter=',')
     headers = next(csvreader, None)
     for row in csvreader:
-        if row[0] == "" or row[1] == "" or row[2] == "":
+        eventid = row[0]
+        eventdate = row[1]
+        eventhours = float(row[2])
+        eventorg = row[3]
+        parsedeventdate = int(time.mktime(time.strptime(eventdate, '%Y-%m-%d')) * 1000000000)
+        if eventid == "" or eventdate == "" or eventhours == "" or eventorg == "":
             print("illegal entry: ", end='')
             print(row)
             ignored+=1
         else:
-            nowtime+=1
             added+=1
             entries.append({
                 'measurement': cfg.influx['measurement'],
-                'time': nowtime,
+                'time': parsedeventdate,
                 'fields': {
-                    'hours': float(row[2]),
+                    'hours': eventhours,
                     },
                 'tags': {
-                    'organizationId': row[0],
+                    'organizationId': eventorg,
                     },
                 })
 
